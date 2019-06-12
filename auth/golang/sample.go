@@ -30,7 +30,6 @@ func main() {
 	params := map[string]string{}
 
 	s := generateUrl(server, url, params)
-	fmt.Println(" shit:  ",s)
 	req, err := http.NewRequest("GET", s, nil)
 	if err != nil {	return	}
 
