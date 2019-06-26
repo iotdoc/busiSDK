@@ -15,8 +15,8 @@ class HTTPProxyPaas
     public:
         explicit HTTPProxyPaas(std::string ak, std::string sk){ak_ = ak; sk_ = sk; };
         ~HTTPProxyPaas(){};
-        std::string sign( std::string http_method , std::string path, std::string params, std::map<std::string,std::string> headers);
-
+        std::string GetAuthorizationSignString( std::string http_method , std::string path, std::string params, std::map<std::string,std::string> headers);
+        
     private:
         int HmacEncode(const char * key, unsigned int key_length, const char * input, unsigned int input_length, std::string &output);
         unsigned char ToHex(unsigned char x) ;
