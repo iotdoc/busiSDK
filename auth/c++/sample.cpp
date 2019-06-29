@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
     std::string params;
 
     hobotpaas::HTTPProxyPaas Paas(ak,sk);
-    std::string Authorization = Paas.GetAuthorizationSignString(method, api, params, headers);
+    std::string Authorization = Paas.Sign(method, api, params, headers);
     printf("Authorization  %s \n", Authorization.c_str());
 
     std::string a = "{\"topic_name\":\"device\",\"topic_id\":\"068B3001100110057L\",\"client_id\":\"cid\"}";
@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
     api = "/ws";
     std::map<std::string, std::string> extraHeaders;
     extraHeaders["host"] = server;
-    Authorization = Paas.GetAuthorizationSignString(method, api, params, extraHeaders);
+    Authorization = Paas.Sign(method, api, params, extraHeaders);
     printf("Authorization  %s \n", Authorization.c_str());
 
     uWS::Hub h;
