@@ -32,6 +32,10 @@ std::string b = "ws://xpushservice-aiot.horizon.ai/ws?authorization=" + Authoriz
 h.connect(b, nullptr, extraHeaders);
 h.run();
 ```
+### 编译说明
+1. g++ -o test sample.cpp -std=c++11 -I./include  -L./lib -luWS -lauth -lcurl -lz -lssl -lcrypto
+2. export LD_LIBRARY_PATH=./lib 
+
 ### 签名原理&过程
 参考文档
 https://iotdoc.horizon.ai/busiopenapi/part0_tutorial/auth.html#part0_auth_1
