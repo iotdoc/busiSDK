@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
     method = "GET";
     api = "/ws";
     std::map<std::string, std::string> extraHeaders;
-    extraHeaders["host"] = server;
+    extraHeaders["Host"] = server;
     Authorization = Paas.Sign(method, api, params, extraHeaders);
     printf("Authorization  %s \n", Authorization.c_str());
 
@@ -62,9 +62,10 @@ int main(int argc, char *argv[]) {
     h.onConnection([&](uWS::WebSocket<uWS::CLIENT> *ws, uWS::HttpRequest req) {   
        ws->send("i am coming");
     });
-    extraHeaders["hobot_xpush_client_id"]="cid";
+    std::map<std::string, std::string> extraHeaders2;//uWS源码会在header中自动生成Host，如果在此处加上extraHeaders2["Host"] = server，ws会返回400。请确保请求的header中，host唯一且与鉴权中的host一致。
+    extraHeaders2["hobot_xpush_client_id"]="cid";
     std::string b = "ws://xpushservice-aiot.horizon.ai/ws?authorization=" + Authorization;
-    h.connect(b, nullptr, extraHeaders);
+    h.connect(b, nullptr, extraHeaders2);
     h.run();
     return 0;
 
