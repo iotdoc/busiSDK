@@ -66,7 +66,7 @@ class HttpUtil
         $parameterStrings = array();
         foreach ($parameters as $k => $v) {
             //跳过Authorization字段
-            if (strcasecmp('Authorization', $k) == 0) {
+            if (strcasecmp('authorization', $k) == 0) {
                 continue;
             }
             if (!isset($k)) {
@@ -135,48 +135,40 @@ class HttpUtil
     }
 
 }
+
 HttpUtil::__init();
 
 class Signer
 {
     //不指定headersToSign情况下，默认签名http头，包括：
     //    1.host
-    //    2.content-length
-    //    3.content-type
-    //    4.content-md5
-    public static $defaultHeadersToSign;
-
-    public static function  __init()
-    {
-        SampleSigner::$defaultHeadersToSign = array(
-            "host",
-            "content-length",
-            "content-type",
-            "content-md5",
-        );
-    }
-
+    //    2.content-type
+	
     //签名函数
-    public function sign(
-        array $credentials,
+    public function  Sign(
+        $accessKeyId,
+		$secretAccessKey,
         $httpMethod,
         $path,
-        $headers,
-        $params,
-        $timestamp
+        $header,
+        $params
     ) {
 
-		if($headers === NULL)
-			$heades = array();
         if($params === NULL)
 			$params = array();
-		if($timestamp == NULL)
-			$timestamp = time();
-
-        //解析ak sk
-        $accessKeyId = $credentials['ak'];
-        $secretAccessKey = $credentials['sk'];
 		
+		$headers = [];
+		foreach ($header as &$value) {
+			$arr = (explode(':',$value ));
+			if(sizeof($arr) == 2){
+				$key = strtolower(trim($arr[0]));
+				if($key == "host" || $key == "content-type"){
+					$headers += [ $key => $arr[1] ];
+				}
+			}
+		}
+		
+		$timestamp = time();
 		// 1.生成sign key
         // 1.1.生成auth-string，格式为：horizon-auth-v1/{accessKeyId}/{timestamp}
         $authString ='horizon-auth-v1'. '/' . $accessKeyId . '/'.$timestamp;
