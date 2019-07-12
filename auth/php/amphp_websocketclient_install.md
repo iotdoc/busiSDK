@@ -12,5 +12,14 @@
 ### 安装amphp/websocket-client依赖
 
 - 执行命令composer config -g repo.packagist composer https://packagist.phpcomposer.com(执行这一步的原因是使用镜像加速下载安装过程, 参考链接[Packagist 镜像使用方法](https://pkg.phpcomposer.com/))
-- 执行命令composer require amphp/websocket-client
-- websocket所需要的vender目录已经给出，可以直接解压到自己项目文件夹下使用
+
+- 从 [amp/websocket-client](https://github.com/amphp/websocket-client)上下载composer.json到当前目录，执行命令 php composer.phar install
+
+- 执行完毕，项目目录下会出现vender文件，继续执行命令composer require amphp/websocket-client
+
+- 执行成功后，vender/amphp目录下会出现websocket-client文件夹
+
+  ###### 附：websocket-client所需要的vender目录已经给出，可以直接解压到自己项目文件夹下使用
+
+
+
