@@ -156,6 +156,8 @@ std::string HTTPProxyPaas::Sign( std::string http_method , std::string path,
   // 4.生成规范化header
   auto canonical_headers = CanonicalHeaders(headers,true);
   // 5.使用'\n'将HTTP METHOD和2、3、4中的结果连接起来，成为一个大字符串
+  std::transform(http_method.begin(), http_method.end(), 
+                   http_method.begin(), ::toupper);//将method转换为大写
   std::string CanonicalRequest = http_method + "\n" + canonical_uri + "\n" 
                        + canonical_querystring + "\n" + canonical_headers;
   //6.使用5中生成的签名串和1中生成的sign key，用SHA-256算法生成签名结果
