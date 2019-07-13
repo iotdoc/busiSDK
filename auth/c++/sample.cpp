@@ -33,9 +33,13 @@ int main(int argc, char *argv[]) {
     headers["host"] = server;
     headers["content-type"]="application/json";
     std::string params;
+    int ret=0;
 
     hobotpaas::HTTPProxyPaas Paas(ak,sk);
-    std::string Authorization = Paas.Sign(method, api, params, headers);
+    std::string Authorization = Paas.Sign(method, api, params, headers, ret);
+    if(ret != 0){
+        printf("something wrong happened\n");
+    }
     printf("Authorization  %s \n", Authorization.c_str());
 
     std::string req_body = "{\"topic_name\":\"device\",\"topic_id\":\"068B3001100110057L\",\"client_id\":\"cid\"}";
@@ -51,7 +55,10 @@ int main(int argc, char *argv[]) {
     api = "/ws";
     std::map<std::string, std::string> extraHeaders;
     extraHeaders["host"] = server;
-    Authorization = Paas.Sign(method, api, params, extraHeaders);
+    Authorization = Paas.Sign(method, api, params, extraHeaders, ret);
+    if(ret != 0){
+        printf("something wrong happened\n");
+    }
     printf("Authorization  %s \n", Authorization.c_str());
 
     uWS::Hub h;

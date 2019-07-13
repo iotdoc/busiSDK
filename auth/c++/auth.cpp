@@ -135,7 +135,12 @@ std::string HTTPProxyPaas::CanonicalHeaders(
 
 std::string HTTPProxyPaas::Sign( std::string http_method , std::string path, 
                                std::string params, 
-                               std::map<std::string,std::string> headers) {
+                               std::map<std::string,std::string> headers,
+                               int &ret) {
+  if(ak_==""|sk_==""){
+    ret = -1;
+    return "";
+  }
   //1.生成sign key
   //1.1.生成auth-string，格式为：horizon-auth-v1/{accessKeyId}/{timestamp}
 
