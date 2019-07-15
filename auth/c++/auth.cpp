@@ -64,29 +64,23 @@ std::string HTTPProxyPaas::UrlEncode(const std::string& str , bool encodeSlash)
 
 
 std::string HTTPProxyPaas::CanonicalQueryString(
-            const std::string& str , bool encodeSlash) {
-  if(str == "") return str;
-  std::vector<std::string> strQuerys;
+            const std::map<std::string, std::string>& queries , bool encodeSlash) {
+
   std::vector<std::string> result;
-  boost::split(strQuerys, str, boost::is_any_of("&"));
-  for(auto &strQuery : strQuerys) {
-    auto pos = strQuery.find('=');
-    std::string query;
-    if(pos != std::string::npos) {
-      if(strQuery.substr(0,pos) == "authorization") {
-        continue;
-      }
-      query = UrlEncode(strQuery.substr(0,pos), encodeSlash) 
-                   + "=" +
-                   UrlEncode(strQuery.substr(pos + 1), encodeSlash);
-    } else {
-      if(strQuery == "authorization") {
-        continue;
-      }
-      query = UrlEncode(strQuery, encodeSlash) + "=" ;
+  for(auto iter = queries.begin(); iter != queries.end(); iter++) {
+    std::string key = iter->first;
+    std::string value = iter->second;
+    if(key=="authorization")
+      continue;
+    std::string ekey = UrlEncode(key, encodeSlash);
+    std::string evalue = "";
+    if(value != ""){
+      evalue = UrlEncode(value, encodeSlash);
     }
-    result.push_back(query);
+    std::string emap = ekey + "=" + evalue;
+    result.push_back(emap);
   }
+
   std::sort(result.begin(), result.end());
   std::string encodeQuery = "";
   for (auto i = 0; i < result.size(); i++) {
@@ -134,10 +128,10 @@ std::string HTTPProxyPaas::CanonicalHeaders(
 
 
 std::string HTTPProxyPaas::Sign( std::string http_method , std::string path, 
-                               std::string params, 
+                               std::map<std::string,std::string> params, 
                                std::map<std::string,std::string> headers,
                                int &ret) {
-  if(ak_==""|sk_==""){
+  if(ak_==""|sk_==""|http_method==""|path==""|headers.size()==0){
     ret = -1;
     return "";
   }

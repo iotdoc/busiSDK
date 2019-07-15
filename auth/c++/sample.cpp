@@ -14,9 +14,13 @@ int write_data(char* buffer, size_t size, size_t nmemb, void* userp){
 }
 
 typedef std::map<std::string, std::string> Headers;
+typedef std::map<std::string, std::string> Params;
 
 int get(string url, string* response, Headers hders);
-int put(string url, string* response, Headers hders, std::string params,std::string body);
+int put(string url, string* response, Headers hders, std::string body);
+int post(string url, string* response, Headers hders, std::string body);
+int del(string url, string* response, Headers hders);
+void addquery(string &url, Params params);
 
 int main(int argc, char *argv[]) {
 
@@ -32,11 +36,12 @@ int main(int argc, char *argv[]) {
     Headers headers;
     headers["host"] = server;
     headers["content-type"]="application/json";
-    std::string params;
+    Params params;
+    //params["a"]="1";
     int ret=0;
 
     hobotpaas::HTTPProxyPaas Paas(ak,sk);
-    std::string Authorization = Paas.Sign(method, api, params, headers, ret);
+    std::string Authorization = Paas.Sign(method, api, params, headers, ret); //签名认证生产
     if(ret != 0){
         printf("something wrong happened\n");
     }
@@ -45,7 +50,8 @@ int main(int argc, char *argv[]) {
     std::string req_body = "{\"topic_name\":\"device\",\"topic_id\":\"068B3001100110057L\",\"client_id\":\"cid\"}";
     std::string resp;
     std::string url = "http://" + headers["host"] + api + "?authorization=" + Authorization;
-    int status_code = put(url, &resp, headers, params, req_body);
+    addquery(url, params);
+    int status_code = put(url, &resp, headers, req_body);
     printf("result : %s", resp.c_str());
 
     //到点记录实时推送
@@ -74,11 +80,24 @@ int main(int argc, char *argv[]) {
     //extraHeaders2["Host"]=server;
     extraHeaders2["hobot_xpush_client_id"]="cid";
     std::string ws_uri = "ws://xpushservice-aiot.horizon.ai/ws?authorization=" + Authorization;
+    addquery(ws_uri, params);
     h.connect(ws_uri, nullptr, extraHeaders2);
     h.run();
     return 0;
 
 }
+
+void addquery(string &url, Params params){
+    if(params.size()==0)
+        return;
+    for(auto iter = params.begin(); iter != params.end(); iter++){
+        url += "&";
+        std::string key = iter->first;
+        std::string value = iter->second;
+        url = url + key + "=" + value;
+    }
+}
+
 // use libcurl for simple code
 
 int get(string url, string* response, Headers extraheaders)
@@ -115,12 +134,12 @@ int get(string url, string* response, Headers extraheaders)
     }
 }
 
-int put(string url, string* response, Headers extraheaders, std::string params, std::string body)
+int put(string url, string* response, Headers extraheaders, std::string body)
 {
     CURL *curl;
     CURLcode ret;
     struct curl_slist *headers = NULL;
-    headers = curl_slist_append(headers, "content-type: application/json");
+    headers = curl_slist_append(headers, "content-type: application/json");//content-type要先于host加在消息头
     auto iter = extraheaders.begin();
     while(iter != extraheaders.end()) {
         std::string tmp = iter->first + ": " + iter->second;
@@ -150,4 +169,101 @@ int put(string url, string* response, Headers extraheaders, std::string params, 
         return -1;
     }
 }
+//POST请求
+int post(string url, string* response, Headers extraheaders, std::string body)
+{
+	CURL* curl;
+	CURLcode ret;
+	struct curl_slist* headers = NULL;
+	headers = curl_slist_append(headers, "content-type: application/json");
+	auto iter = extraheaders.begin();
+	while (iter != extraheaders.end()) {
+		std::string tmp = iter->first + ": " + iter->second;
+		curl_slist_append(headers, tmp.c_str());
+		iter++;
+	}
+	// 初始化  
+	curl = curl_easy_init();
+	if (curl)
+	{
+		// set params  
+		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");//自定义请求
+		//curl_easy_setopt(curl, CURLOPT_POST, 1); // post req  
+		curl_easy_setopt(curl, CURLOPT_URL, (char*)url.c_str()); // url  1
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body.c_str()); 
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);//设置回调函数
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)response);//设置写数据
 
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, false); // if want to use https  
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, false); // set peer and host verify false  
+		curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
+		curl_easy_setopt(curl, CURLOPT_READFUNCTION, NULL);
+		curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
+		curl_easy_setopt(curl, CURLOPT_HEADER, 1);
+		curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 3);
+		curl_easy_setopt(curl, CURLOPT_TIMEOUT, 3);
+		// start req  
+		ret = curl_easy_perform(curl);
+		if (ret == 0) {
+			curl_slist_free_all(headers);
+			curl_easy_cleanup(curl);
+			return ret;
+		}
+		else {
+			return ret;
+		}
+	}
+	else {
+		return -1;
+	}
+}
+
+//DELETE请求
+int del(string url, string* response, Headers extraheaders)
+{
+	CURL* curl;
+	CURLcode ret;
+	struct curl_slist* headers = NULL;
+	//headers = curl_slist_append(headers, "content-type: application/json");
+	auto iter = extraheaders.begin();
+	while (iter != extraheaders.end()) {
+		std::string tmp = iter->first + ": " + iter->second;
+		curl_slist_append(headers, tmp.c_str());
+		iter++;
+	}
+	// 初始化  
+	curl = curl_easy_init();
+	if (curl)
+	{
+		// set params  
+		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");//自定义请求
+		//curl_easy_setopt(curl, CURLOPT_POST, 1); // post req  
+		curl_easy_setopt(curl, CURLOPT_URL, (char*)url.c_str()); // url  1
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);//设置回调函数
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)response);//设置写数据
+
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, false); // if want to use https  
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, false); // set peer and host verify false  
+		curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
+		curl_easy_setopt(curl, CURLOPT_READFUNCTION, NULL);
+		curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
+		curl_easy_setopt(curl, CURLOPT_HEADER, 1);
+		curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 3);
+		curl_easy_setopt(curl, CURLOPT_TIMEOUT, 3);
+		// start req  
+		ret = curl_easy_perform(curl);
+		if (ret == 0) {
+			curl_slist_free_all(headers);
+			curl_easy_cleanup(curl);
+			return ret;
+		}
+		else {
+			return ret;
+		}
+	}
+	else {
+		return -1;
+	}
+}

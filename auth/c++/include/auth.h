@@ -15,14 +15,14 @@ class HTTPProxyPaas
     public:
         explicit HTTPProxyPaas(std::string ak, std::string sk){ak_ = ak; sk_ = sk; };
         ~HTTPProxyPaas(){};
-        std::string Sign( std::string http_method , std::string path, std::string params, std::map<std::string,std::string> headers, int &ret);
+        std::string Sign( std::string http_method , std::string path, std::map<std::string,std::string> params, std::map<std::string,std::string> headers, int &ret);
         
     private:
         int HmacEncode(const char * key, unsigned int key_length, const char * input, unsigned int input_length, std::string &output);
         unsigned char ToHex(unsigned char x) ;
         int is_al_num_char( unsigned char c );
         std::string UrlEncode(const std::string& str , bool encodeSlash);
-        std::string CanonicalQueryString(const std::string& str , bool encodeSlash);
+        std::string CanonicalQueryString(const std::map<std::string, std::string>& str , bool encodeSlash);
         std::string CanonicalHeaders(std::map<std::string,std::string>& headers, bool encodeSlash);
 
     private:
