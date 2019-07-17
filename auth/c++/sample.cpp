@@ -16,20 +16,39 @@ int write_data(char* buffer, size_t size, size_t nmemb, void* userp){
 typedef std::map<std::string, std::string> Headers;
 typedef std::map<std::string, std::string> Params;
 
+// http request function use libcurl 
 int get(string url, string* response, Headers hders);
 int put(string url, string* response, Headers hders, std::string body);
 int post(string url, string* response, Headers hders, std::string body);
 int del(string url, string* response, Headers hders);
+// add query into url
 void addquery(string &url, Params params);
 
+// ak sk must not be null
+// ak => API key , sk => Secret key
+std::string ak = "FCM5ZwyF2UFYmYTnr611SdDK";
+std::string sk = "tXIttrZeOBudgBjps5fUtSgyvyCBP3Gj";
+
+// http request sample
+void PutSample();
+void GetSample();
+void PostSample();
+void DeleteSample();
+void WebSocketSample();
+
+//main work function
 int main(int argc, char *argv[]) {
+    PutSample();
+    GetSample();
+    PostSample();
+    DeleteSample();
+    WebSocketSample();
+    return 0;
+}
 
-    std::string ak = "FCM5ZwyF2UFYmYTnr611SdDK";
-    std::string sk = "tXIttrZeOBudgBjps5fUtSgyvyCBP3Gj";
-
+void PutSample(){
     //到店记录订阅
     //https://iotdoc.horizon.ai/busiopenapi/part5_api_analysis_tools/statistics.html#part5_4
-
     std::string server = "api-aiot.horizon.ai";
     std::string method = "PUT";
     std::string api = "/openapi/v1/analysis_tools/visitors/sub";
@@ -44,6 +63,7 @@ int main(int argc, char *argv[]) {
     std::string Authorization = Paas.Sign(method, api, params, headers, ret); //签名认证生产
     if(ret != 0){
         printf("something wrong happened\n");
+        return;
     }
     printf("Authorization  %s \n", Authorization.c_str());
 
@@ -52,18 +72,125 @@ int main(int argc, char *argv[]) {
     std::string url = "http://" + headers["host"] + api + "?authorization=" + Authorization;
     addquery(url, params);
     int status_code = put(url, &resp, headers, req_body);
-    printf("result : %s", resp.c_str());
+    if (status_code != CURLE_OK) {
+	    printf("error status code:  %d\n", status_code);
+    }
+    printf("result : %s\n", resp.c_str());
+    return;
+}
 
-    //到点记录实时推送
-    //https://iotdoc.horizon.ai/busiopenapi/part5_api_analysis_tools/statistics.html#part5_6
-    server = "xpushservice-aiot.horizon.ai:80";//uWS源码会在header中自动生成Host，eq: "Host: " + hostname + ":" + std::to_string(port) + "\r\n"。故生成鉴权串也加port，校验通过。
-    method = "GET";
-    api = "/ws";
-    std::map<std::string, std::string> extraHeaders;
-    extraHeaders["host"] = server;
-    Authorization = Paas.Sign(method, api, params, extraHeaders, ret);
+void GetSample(){
+    //获取设备空间列表
+    //https://iotdoc.horizon.ai/busiopenapi/part1_device_space/device_space.html#part1_0
+    std::string server = "api-aiot.horizon.ai";
+    std::string method = "GET";
+    std::string api = "/openapi/v1/device_spaces";
+    Headers headers;
+    headers["host"] = server;
+    Params params;
+    //params["a"]="1";
+    int ret=0;
+
+    hobotpaas::HTTPProxyPaas Paas(ak,sk);
+    std::string Authorization = Paas.Sign(method, api, params, headers, ret); //签名认证生产
     if(ret != 0){
         printf("something wrong happened\n");
+        return;
+    }
+    printf("Authorization  %s \n", Authorization.c_str());
+
+    std::string resp;
+    std::string url = "http://" + headers["host"] + api + "?authorization=" + Authorization;
+    addquery(url, params);
+    int status_code = get(url, &resp, headers);
+    if (status_code != CURLE_OK) {
+	    printf("error status code:  %d\n", status_code);
+    }
+    printf("result : %s", resp.c_str());
+    return;
+}
+
+void PostSample(){
+    //创建设备空间
+    //https://iotdoc.horizon.ai/busiopenapi/part1_device_space/device_space.html#part1_1
+    std::string server = "api-aiot.horizon.ai";
+    std::string method = "POST";
+    std::string api = "/openapi/v1/device_spaces";
+    Headers headers;
+    headers["host"] = server;
+    headers["content-type"]="application/json";
+    Params params;
+    //params["a"]="1";
+    int ret=0;
+
+    hobotpaas::HTTPProxyPaas Paas(ak,sk);
+    std::string Authorization = Paas.Sign(method, api, params, headers, ret); //签名认证生产
+    if(ret != 0){
+        printf("something wrong happened\n");
+        return;
+    }
+    printf("Authorization  %s \n", Authorization.c_str());
+
+    std::string req_body = "{\"name\":\"sdktestdevice\",\"description\":\"sdk sample\",\"extra\":\"nothing\"}";
+    std::string resp;
+    std::string url = "http://" + headers["host"] + api + "?authorization=" + Authorization;
+    addquery(url, params);
+    int status_code = post(url, &resp, headers, req_body);
+    if (status_code != CURLE_OK) {
+	    printf("error status code:  %d\n", status_code);
+    }
+    printf("result : %s\n", resp.c_str());
+    return;
+}
+
+void DeleteSample(){
+    //删除设备空间
+    //https://iotdoc.horizon.ai/busiopenapi/part1_device_space/device_space.html#part1_4
+    std::string server = "api-aiot.horizon.ai";
+    std::string method = "DELETE";
+    std::string api = "/openapi/v1/device_spaces/xxxxxxxxxxx";//xxxxxxxxxxx 为之前创建设备空间返回的space_id
+    Headers headers;
+    headers["host"] = server;
+    Params params;
+    //params["a"]="1";
+    int ret=0;
+
+    hobotpaas::HTTPProxyPaas Paas(ak,sk);
+    std::string Authorization = Paas.Sign(method, api, params, headers, ret); //签名认证生产
+    if(ret != 0){
+        printf("something wrong happened\n");
+        return;
+    }
+    printf("Authorization  %s \n", Authorization.c_str());
+
+    std::string resp;
+    std::string url = "http://" + headers["host"] + api + "?authorization=" + Authorization;
+    addquery(url, params);
+    int status_code = del(url, &resp, headers);
+    if (status_code != CURLE_OK) {
+	    printf("error status code:  %d\n", status_code);
+    }
+    printf("result : %s", resp.c_str());
+    return;
+}
+
+void WebSocketSample(){
+    //到点记录实时推送
+    //https://iotdoc.horizon.ai/busiopenapi/part5_api_analysis_tools/statistics.html#part5_6
+    std::string server = "xpushservice-aiot.horizon.ai:80";//uWS源码会在header中自动生成Host，eq: "Host: " + hostname + ":" + std::to_string(port) + "\r\n"。故生成鉴权串也加port，校验通过。
+    std::string method = "GET";
+    std::string api = "/ws";
+    std::map<std::string, std::string> extraHeaders;
+    extraHeaders["host"] = server;
+    Params params;
+    //params["a"]="1";
+    int ret=0;
+
+    hobotpaas::HTTPProxyPaas Paas(ak,sk);
+    std::string Authorization = Paas.Sign(method, api, params, extraHeaders, ret);
+    if(ret != 0){
+        printf("something wrong happened\n");
+        return;
     }
     printf("Authorization  %s \n", Authorization.c_str());
 
@@ -71,7 +198,6 @@ int main(int argc, char *argv[]) {
     h.onMessage([](uWS::WebSocket<uWS::CLIENT> *ws, char *message, size_t length, uWS::OpCode opCode) {
       std::cout << std::string(message, length) << std::endl;
     });
-
     h.onConnection([&](uWS::WebSocket<uWS::CLIENT> *ws, uWS::HttpRequest req) {   
        ws->send("i am coming");
     });
@@ -83,9 +209,9 @@ int main(int argc, char *argv[]) {
     addquery(ws_uri, params);
     h.connect(ws_uri, nullptr, extraHeaders2);
     h.run();
-    return 0;
-
+    return;
 }
+
 
 void addquery(string &url, Params params){
     if(params.size()==0)
@@ -99,13 +225,12 @@ void addquery(string &url, Params params){
 }
 
 // use libcurl for simple code
-
+// 消息头种需要加content-type时，务必要先于host加在消息头
 int get(string url, string* response, Headers extraheaders)
 {
     CURL *curl;
     CURLcode ret;
     struct curl_slist *headers = NULL;
-    headers = curl_slist_append(headers, "Accept: Agent-007");
     auto iter = extraheaders.begin();
     while(iter != extraheaders.end()) {
         std::string tmp = iter->first + ": " + iter->second;
@@ -175,7 +300,7 @@ int post(string url, string* response, Headers extraheaders, std::string body)
 	CURL* curl;
 	CURLcode ret;
 	struct curl_slist* headers = NULL;
-	headers = curl_slist_append(headers, "content-type: application/json");
+	headers = curl_slist_append(headers, "content-type: application/json");//content-type要先于host加在消息头
 	auto iter = extraheaders.begin();
 	while (iter != extraheaders.end()) {
 		std::string tmp = iter->first + ": " + iter->second;
@@ -225,7 +350,6 @@ int del(string url, string* response, Headers extraheaders)
 	CURL* curl;
 	CURLcode ret;
 	struct curl_slist* headers = NULL;
-	//headers = curl_slist_append(headers, "content-type: application/json");
 	auto iter = extraheaders.begin();
 	while (iter != extraheaders.end()) {
 		std::string tmp = iter->first + ": " + iter->second;
