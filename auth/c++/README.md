@@ -23,7 +23,7 @@
 3. 根据接口说明，调用HTTPProxyPaas类中的Sign方法，获取签名字符串authorization
 ```
 
-public String Sign( std::string http_method , std::string path, std::string params, std::map<std::string,std::string> headers);
+public String Sign( std::string http_method , std::string path, std::map<std::string,std::string> params, std::map<std::string,std::string> headers);
 ```
 4. 实现类似sample中到店记录订阅put(url, &resp, headers, params, req_body);订阅到店推送
 5. 建立websocket连接，接收到店推动的SampleCode 为
@@ -32,8 +32,8 @@ public String Sign( std::string http_method , std::string path, std::string para
 uWS::Hub h;
 h.onMessage([](uWS::WebSocket<uWS::CLIENT> *ws, char *message, size_t length, uWS::OpCode opCode);
 h.onConnection([&](uWS::WebSocket<uWS::CLIENT> *ws, uWS::HttpRequest req);
-std::string b = "ws://xpushservice-aiot.horizon.ai/ws?authorization=" + Authorization;
-h.connect(b, nullptr, extraHeaders);
+std::string ws_uri = "ws://xpushservice-aiot.horizon.ai/ws?authorization=" + Authorization;
+h.connect(ws_uri, nullptr, extraHeaders);
 h.run();
 ```
 ### 编译运行说明
