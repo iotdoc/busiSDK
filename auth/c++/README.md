@@ -1,7 +1,7 @@
 ## c++ 签名sdk/demo使用说明
 ### 准备环境
 * 使用SDK libauth.so时，请先安装openssl，boost
-* 示例种使用libcurl和libuWS实现http和websocket请求，为方便编译在include和lib文件夹中提供openssl，boost头文件和ssl，crypto，z，uWS等第三方库
+* 示例中使用libcurl和libuWS实现http和websocket请求，为方便编译sample在include和lib文件夹中提供openssl，boost头文件和ssl，crypto，z，uWS等第三方库
 ### 获取SDK源码
 * [c++ sdk源码地址](https://github.com/iotdoc/busiSDK/tree/master/auth/c++)
 * 代码说明
@@ -9,13 +9,14 @@
 | 名称 | 说明
 |---|---
 |lib/libauth.so|签名sdk的动态库
-|lib/libuWS.so|示例中websocket连接客户端用的开源库
-|lib/libcrypto.so|鉴权需要的动态库
-|lib/libssl.so|鉴权需要的动态库
+|lib/libuWS.so|sample中websocket连接客户端用的开源库
+|lib/libcrypto.so|鉴权需要的动态库，编译sample用
+|lib/libssl.so|鉴权需要的动态库，编译sample用
 |sample.cpp|sdk调用示例
 |auth.cpp|sdk函数定义
 |include/auth.h|sdk头文件
-|include/openssl|鉴权需要的头文件，必须
+|include/boost|鉴权需要的头文件，编译sample用
+|include/openssl|鉴权需要的头文件，编译sample用
 |include/uWS|uWS需要的头文件，编译sample需要
 
 ### Sample Code说明
