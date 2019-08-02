@@ -13,13 +13,13 @@ use Amp\Websocket;
 //https://iotdoc.horizon.ai/busiopenapi/part5_api_analysis_tools/statistics.html#part5_6
 Amp\Loop::run(function () {
 	$signer = new Signer();
-	$ak = "your ak";
-	$sk = "your sk";
-	$server = "xpushservice-aiot.horizon.ai"; 
+	$ak = "FCM5ZwyF2UFYmYTnr611SdDK";
+	$sk = "tXIttrZeOBudgBjps5fUtSgyvyCBP3Gj";
+	$WEBSOCKET_HOST = "xpushservice-aiot.horizon.ai"; 
 	$method = "GET";
 	$api = "/ws";
 	$header = array();
-	$header[] = "host:".$server;
+	$header[] = "host:".$WEBSOCKET_HOST;
 	$params = array();
 	$Authorization = $signer->Sign($ak, $sk, $method, $api, $header, $params);
 	$url = "ws://xpushservice-aiot.horizon.ai/ws?authorization=".$Authorization;

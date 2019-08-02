@@ -7,19 +7,19 @@ use Amp\Websocket;
 
 $signer = new Signer();
 
-$ak = "your ak";
-$sk = "your sk";
+$ak = "your API key";
+$sk = "your Secret key";
 //获取设备空间列表
 //https://iotdoc.horizon.ai/busiopenapi/part1_device_space/device_space.html#part1_0
-$server = "openapi.test1.ib.horizon.ai";
+$PAAS_HOST = "openapi.test1.ib.horizon.ai";
 $method = "GET";
 $api = "/openapi/v1/device_spaces";
-$header[]="host:".$server;
+$header[]="host:".$PAAS_HOST;
 $params = array();
 $Authorization = $signer->Sign($ak, $sk, $method, $api, $header, $params);
 print($Authorization);
 echo "<br>";
-$url = "http://".$server.$api;
+$url = "http://".$PAAS_HOST.$api;
 $header[] = "authorization:".$Authorization;
 $response = "";
 $ret = get($url, $response, $header);
@@ -27,22 +27,22 @@ print_r ($response);
 echo "<br>";
 
 
-$ak = "your ak";
-$sk = "your sk";
+$ak = "your API key";
+$sk = "your Secret key";
 //到店记录订阅
 //https://iotdoc.horizon.ai/busiopenapi/part5_api_analysis_tools/statistics.html#part5_4
-$server = "api-aiot.horizon.ai";
+$PAAS_HOST = "api-aiot.horizon.ai";
 $method = "PUT";
 $api = "/openapi/v1/analysis_tools/visitors/sub";
 $header = array();
-$header[]="host:".$server;
+$header[]="host:".$PAAS_HOST;
 $header[] = "content-type:"."application/json";
 $params = array();
 $Authorization = $signer->Sign($ak, $sk, $method, $api, $header, $params);
 print($Authorization);
 echo "<br>";
 $body = "{\"topic_name\":\"device\",\"topic_id\":\"068B3001100110057L\",\"client_id\":\"cid\"}";
-$url = "http://".$server.$api."?authorization=".$Authorization;
+$url = "http://".$PAAS_HOST.$api."?authorization=".$Authorization;
 $response = "";
 $ret = put($url, $response, $header, $body);
 print_r($response);

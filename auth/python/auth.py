@@ -68,28 +68,58 @@ def get_canonical_headers(headers):
 
 
 def sign(ak, sk, http_method, path, params, headers, timestamp=None):
-        headers = headers or {}
-        params = params or {}
-        timestamp = timestamp or int(time.time())
+    '''
+    :param ak: string类型,用户在busiopenapi控制台创建应用是返回的API key
+    :param sk: string类型,用户在busiopenapi控制台创建应用是返回的Secret key
+    :param http_method: string类型,请求当前busiopenapi接口需要用到的http method，busiopenapi支持的http method为: POST, GET, DELETE, PUT
+    :param path: string类型,请求当前busiopenapi接口的path路径
+    :param params: dict类型,请求当前busiopenapi接口的query参数
+    :param headers: dict类型,请求当前busiopenapi接口的headers
+    :param timestamp: int类型,请求当前busiopenapi接口的时间，默认为调用sign的时间
 
-        # 1.生成sign key
-        # 1.1.生成auth-string，格式为：horizon-auth-v1/{accessKeyId}/{timestamp}
-        sign_key_info = 'horizon-auth-v1/%s/%d' % (ak, timestamp)
-        # 1.2.使用auth-string加上SK，用SHA-256生成sign key
-        sign_key = hmac.new(bytes(sk, encoding='utf8'),
-                            bytes(sign_key_info, encoding='utf8'), hashlib.sha256).hexdigest()
-        # 2.生成规范化uri
-        canonical_uri = get_canonical_uri(path)
-        # 3.生成规范化query string
-        canonical_querystring = get_canonical_querystring(params)
-        # 4.生成规范化header
-        canonical_headers = get_canonical_headers(headers)
-        # 5.使用'\n'将HTTP METHOD和2、3、4中的结果连接起来，成为一个大字符串
-        string_to_sign = '\n'.join(
-            [http_method, canonical_uri, canonical_querystring, canonical_headers])
-        # 6.使用5中生成的签名串和1中生成的sign key，用SHA-256算法生成签名结果
-        sign_result = hmac.new(bytes(sign_key, encoding='utf8'),
-                               bytes(string_to_sign, encoding='utf8'), hashlib.sha256).hexdigest()
-        # 7.拼接最终签名结果串
-        res = '%s/%s' % (sign_key_info, sign_result)
-        return res
+    '''
+    headers = headers or {}
+    params = params or {}
+    timestamp = timestamp or int(time.time())
+    if not isinstance(params, dict):
+        raise ValueError("type of params need to be dict")
+    if not isinstance(headers, dict):
+        raise ValueError("type of params need to be dict")
+    if len(ak) == 0:
+        raise ValueError("ak can not be empty")
+    if len(sk) == 0:
+        raise ValueError("sk can not be empty")
+    if http_method not in ["get", "GET", "post", "POST","delete", "DELETE", "put", "PUT"]:
+        raise ValueError("http_method need be one of [POST, GET, DELETE, PUT]")
+    if http_method in ["get", "GET"]:
+        http_method = "GET"
+    if http_method in ["post", "POST"]:
+        http_method = "POST"
+    if http_method in ["delete", "DELETE"]:
+        http_method = "DELETE"
+    if http_method in ["put", "PUT"]:
+        http_method = "PUT"
+
+    if not path.startswith("/openapi/") and path != "/ws":
+        raise ValueError("path should be start with /openapi, for detail path, read the doc")
+
+    # 1.生成sign key
+    # 1.1.生成auth-string，格式为：horizon-auth-v1/{accessKeyId}/{timestamp}
+    sign_key_info = 'horizon-auth-v1/%s/%d' % (ak, timestamp)
+    # 1.2.使用auth-string加上SK，用SHA-256生成sign key
+    sign_key = hmac.new(sk.encode('utf-8'), sign_key_info.encode('utf-8'), hashlib.sha256).hexdigest()
+    # 2.生成规范化uri
+    canonical_uri = get_canonical_uri(path)
+    # 3.生成规范化query string
+    canonical_querystring = get_canonical_querystring(params)
+    # 4.生成规范化header
+    canonical_headers = get_canonical_headers(headers)
+    # 5.使用'\n'将HTTP METHOD和2、3、4中的结果连接起来，成为一个大字符串
+    string_to_sign = '\n'.join(
+        [http_method, canonical_uri, canonical_querystring, canonical_headers])
+    # 6.使用5中生成的签名串和1中生成的sign key，用SHA-256算法生成签名结果
+    sign_result = hmac.new(sign_key.encode('utf-8'),
+                           string_to_sign.encode('utf-8'), hashlib.sha256).hexdigest()
+    # 7.拼接最终签名结果串
+    res = '%s/%s' % (sign_key_info, sign_result)
+    return res
